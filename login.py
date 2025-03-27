@@ -17,18 +17,41 @@ async def login():
     )
 
     try:
-        account.start()
-        acc = account.get_me()
-        print(f"Successfully logged in as {acc.first_name}")
+        await account.start()
+        acc = await account.get_me()
+        await addAccountToList(API_ID=api_id, API_HASH=api_hash, account=acc)
 
     except Exception as e:
         print(f"Login failed: {e}")
 
-def addAccountToList():
-    cpass = configparser.RawConfigParser()
-    cpass.read('data/accounts.data', encoding="UTF-8")
-    
+async def addAccountToList(API_ID, API_HASH, account):
 
-
+    try:
+        voiplen = 0
+        voiplen = await readVoips()
+        config = configparser.ConfigParser()
+        config['credential'+str(voiplen+1)] = {
+            'username' : account.username,
+            'name' : str(account.first_name) + str(account.last_name),
+            'id' : account.id,
+            'api_id' : API_ID,
+            'api_hash' : API_HASH,
+            'restricted' : account.is_restricted,
+            'in_usage' : True   
+        }
+        if voiplen == 0:
+            method = 'w'
+        else:
+            method = 'a'
+        with open('data/accounts.data', method, encoding='UTF-8') as accountsfile:
+            config.write(accountsfile)
+            print(f"Account successfully logged as: {account.username}")
+    except Exception as e:
+        print(f"Account config failed: {e}")
+        
+async def readVoips():
+    config = configparser.ConfigParser()
+    config.read('data/accounts.data', encoding='UTF-8')
+    return len(config.sections())
 
 asyncio.run(login())
