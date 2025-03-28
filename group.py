@@ -9,7 +9,7 @@ async def join_groups(account):
         try:
             await app.get_me()
             for group in groups:
-                seconds = random.uniform(25, 45)
+                seconds = random.uniform(25, 360)
                 try:
                     await app.join_chat(str(group))
                 except Exception as e:
@@ -54,6 +54,46 @@ async def get_group_ids(account):
                         groups.append(str(dialog.chat.username))
             return(groups)
 
+async def join_single_group(account, group):
+    await account.join_chat(group)
+
+async def get_a_random_group():
+    return random.choice(groups)
+
+async def join_a_random_group(account):
+    joined_groups = []
+    async for dialog in account.get_dialogs():
+        if dialog.chat.type in (ChatType.SUPERGROUP, ChatType.GROUP):
+            if dialog.chat.title != "DealArchitects'_Blueprints":
+                if dialog.chat.username:
+                    joined_groups.append(dialog.chat.username)
+
+    max_attempts = 5
+    attempt = 0
+    
+    while attempt < max_attempts:
+        random_group = await get_a_random_group()
+        
+        if not random_group:
+            print("No random group available")
+            return False
+            
+        if random_group not in joined_groups:
+            try:
+                await join_single_group(account=account, group=random_group)
+                print(f"Successfully joined: {random_group}")
+                return True
+            except Exception as e:
+                print(f"Failed to join {random_group}: {e}")
+                attempt += 1
+                await asyncio.sleep(5)
+        else:
+            print(f"Already in group: {random_group}")
+            attempt += 1
+            continue
+    
+    print(f"Failed to join a new group after {max_attempts} attempts")
+    return False
 
 async def main():
     #await join_groups("sessions/radiant_glimmer3")

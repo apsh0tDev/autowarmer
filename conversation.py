@@ -4,11 +4,11 @@ from pyrogram import Client
 from convo.convos import chat_conversations
 
 async def convo(accountOne, accountTwo):
-    async with Client(accountOne) as x_acc, Client(accountTwo) as y_acc:
+    
         try:
             x, y = await asyncio.gather(
-                x_acc.get_me(),
-                y_acc.get_me()
+                accountOne.get_me(),
+                accountTwo.get_me()
             )
             print(f"Both accounts connected successfully!")
             #get the random conversation from chat_conversations dict
@@ -17,13 +17,13 @@ async def convo(accountOne, accountTwo):
                 if message['user'] == 'X':
                     send_reaction = random.choice([True, False])
                     if send_reaction:
-                        await rand_reaction(x_acc, y.username)
-                    await x_acc.send_message(y.username, message['message'])
+                        await rand_reaction(accountOne, y.username)
+                    await accountOne.send_message(y.username, message['message'])
                 elif message['user'] == 'Y':
                     send_reaction = random.choice([True, False])
                     if send_reaction:
-                        await rand_reaction(y_acc, x.username)
-                    await y_acc.send_message(x.username, message['message'])
+                        await rand_reaction(accountTwo, x.username)
+                    await accountTwo.send_message(x.username, message['message'])
 
                 seconds = random.randrange(4,35)
                 await asyncio.sleep(seconds)
@@ -53,8 +53,6 @@ async def rand_reaction(sender, receiver):
             
     except Exception as e:
         print(f"Error sending reaction: {e}")
-    
-
 
 async def main():
     await convo("sessions/radiant_glimmer3", "sessions/gentle_sunrise_72")
